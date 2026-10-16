@@ -88,8 +88,9 @@ def main():
     print("Cashback on 420:", cashback_for(420))
     print("Gateway check:", check_gateway("wrong"))  # should be False
     print("Final balance: Rs.", wallet["balance"])
-    credit_amounts=[t["amount"] for t in transactions if t["type"] == "credit"]
-    print("Total credited:",sum(credit_amounts))
+    credit_amounts = [t["amount"] for t in transactions
+                      if t["type"] == "credit"]
+    print("Total credited:", sum(credit_amounts))
 
 
 main()
