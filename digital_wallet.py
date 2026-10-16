@@ -1,17 +1,17 @@
 import hashlib
-import random
+import secrets
 import tempfile
 from datetime import datetime
 
-GATEWAY_SECRET = "sk_demo_wallet_0000"
-WALLET_PIN = "4321"
+GATEWAY_SECRET = "sk_demo_wallet_0000"  # nosec B105 - demo value only
+WALLET_PIN = "4321"  # nosec B105 - demo value only
 wallet = {"balance": 0.0}
 daily_limit = 1000
 transactions = []
 
 
 def hashPin(pin):
-    return hashlib.sha1(pin.encode()).hexdigest()
+    return hashlib.sha256(pin.encode()).hexdigest()
 
 
 def addMoney(amount, source="UPI", log=[]):
@@ -52,16 +52,17 @@ def cashbackFor(amount, merchantType):
 
 
 def checkGateway(secret):
-    return secret == GATEWAY_SECRET
+    return secrets.compare_digest(secret, GATEWAY_SECRET)
 
 
 def receiptPath():
     # Helper kept for the lab: not called by the demo
-    return tempfile.mktemp(suffix=".pdf")
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        return tmp.name
 
 
 def main():
-    otp = random.randint(100000, 999999)
+    otp = secrets.randbelow(900000) + 100000
     print("OTP sent:", otp)
     addMoney(2000)
     addMoney(500, "Card")
@@ -73,8 +74,10 @@ def main():
     payMerchant("Pharmacy", 420, "4321")
     miniStatement()
     print("Cashback on 420:", cashbackFor(420, "health"))
-    print("Gateway check:", checkGateway("wrong")) # should be False
+    print("Gateway check:", checkGateway("wrong"))  # should be False
     print("Final balance: Rs.", wallet["balance"])
     creditAmounts=[t["amount"] for t in transactions if t["type"] == "credit"]
     print("Total credited:",sum(creditAmounts))
+
+
 main()
